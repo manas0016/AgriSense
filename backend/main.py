@@ -474,7 +474,11 @@ db_seeds = Chroma(
 )
 
 db_states = Chroma(collection_name="state_db", embedding_function=embedding_model, persist_directory="./chroma_states")
-
+db_custom = Chroma(
+    collection_name="custom_db",
+    embedding_function=embedding_model,
+    persist_directory="./chroma_custom"
+)
 def ingest_all_csvs(folder_path="data_csv", chunk_size=5):
     csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
     for csv_file in csv_files:
@@ -532,10 +536,32 @@ def ingest_state_txts(folder_path="data_states"):
             print(f"Error ingesting {txt_file}: {e}")
     db_states.persist()
 
+
+def ingest_sqlite_db(db_path, table_name, chunk_size=5):
+    try:
+        conn = sqlite3.connect(db_path)
+        query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql_query(query, conn)
+        new_texts = []
+        for start_idx in range(0, len(df), chunk_size):
+            chunk_rows = df.iloc[start_idx: start_idx + chunk_size]
+            chunk_texts = [
+                " | ".join([f"{col}: {row[col]}" for col in chunk_rows.columns])
+                for _, row in chunk_rows.iterrows()
+            ]
+            new_texts.append("\n".join(chunk_texts))
+        db_custom.add_texts(new_texts)
+        db_custom.persist()
+        conn.close()
+        print(f"Ingested {len(df)} rows from {db_path} into custom_db")
+    except Exception as e:
+        print(f"Error ingesting {db_path}: {e}")    
+
 ingest_state_txts()
 ingest_all_csvs()
 ingest_pdfs()
 ingest_seed_csvs()
+ingest_sqlite_db("backend/agri_market.db", "market_prices", chunk_size=5)  # Adjust path and table name as needed
 
 conn = sqlite3.connect("chat_history.db", check_same_thread=False)
 cursor = conn.cursor()
@@ -645,7 +671,6 @@ def extract_city_from_query(query):
 
 
 
-
 @app.post("/ask")
 async def ask(
     user_id: str = Form(...),
@@ -670,12 +695,10 @@ async def ask(
         crop_match = re.search(r'\b(?:my|the)\s+([a-zA-Z ]+)\s+yield', query.lower())
         crop_name = crop_match.group(1).strip() if crop_match else None
 
-        # Retrieve cold tolerance info from seed DB
         retriever_cold = db_seeds.as_retriever(search_kwargs={"k": 3})
         cold_docs = retriever_cold.get_relevant_documents(f"{crop_name} cold tolerance")
         cold_context = " ".join([d.page_content for d in cold_docs])
 
-        # Get next week's minimum temperature forecast
         forecast = await get_weather_forecast(lat, lon, days=7)
         min_temps = []
         for line in forecast.split('\n'):
@@ -684,7 +707,6 @@ async def ask(
                 min_temps.append(float(match.group(1)))
         next_week_min_temp = min(min_temps) if min_temps else None
 
-        # Compose a specific prompt for the model
         ai_prompt = f"""
         You are an agriculture assistant for Indian farmers.
         Farmer's Location → State: {state}, District: {district}, City: {city}
@@ -714,13 +736,17 @@ async def ask(
         return {"query": query, "location": location_info, "response": ai_content}
 
     # General retrieval and prompt construction
-    retriever_main = db.as_retriever(search_kwargs={"k": k})
-    retriever_seeds = db_seeds.as_retriever(search_kwargs={"k": k})
+    retriever_main = db.as_retriever(search_kwargs={"k": 2})
+    retriever_seeds = db_seeds.as_retriever(search_kwargs={"k": 2})
+    retriever_custom = db_custom.as_retriever(search_kwargs={"k": 2})
+
     main_docs = retriever_main.get_relevant_documents(query)
     seed_docs = retriever_seeds.get_relevant_documents(query)
+    custom_docs = retriever_custom.get_relevant_documents(query)
 
     main_context = " ".join([d.page_content for d in main_docs])
     seed_context = " ".join([d.page_content for d in seed_docs])
+    custom_context = " ".join([d.page_content for d in custom_docs])
 
     state_context = ""
     if state:
@@ -741,6 +767,7 @@ async def ask(
     ✅ General Agri Knowledge: {main_context}
     🌱 Seed Variety Info: {seed_context}
     🏞️ State Guidelines: {state_context}
+    📦 Custom DB Info: {custom_context}
     🌦️ Weather & Soil Info: {weather_context}
 
     Question: {query}
@@ -767,8 +794,3 @@ async def ask(
     conn.commit()
 
     return {"query": query, "location": location_info, "response": ai_content}
-@app.get("/history")
-async def get_history(user_id: str, limit: int = 50):
-    cursor.execute("SELECT role, content, timestamp FROM messages WHERE user_id = ? ORDER BY id ASC LIMIT ?", (user_id, limit))
-    rows = cursor.fetchall()
-    history = [{"role": r[0], "content": r[1], "timestamp": r[2]} for r in rows]
