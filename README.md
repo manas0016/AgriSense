@@ -1,6 +1,6 @@
 # AI Agent App
 
-This project is an AI-powered agriculture assistant web application. It allows users to upload CSV files, chat with an AI agent, and retrieve crop recommendations, weather forecasts, and more using advanced language models and vector search.
+This project is an AI-powered agriculture assistant web application. It allows users to upload CSV files, chat with an AI agent, retrieve crop recommendations, weather forecasts, market prices, and more using advanced language models and vector search.
 
 ---
 
@@ -8,6 +8,7 @@ This project is an AI-powered agriculture assistant web application. It allows u
 
 - **CSV Upload:** Ingest agricultural data for retrieval and Q&A.
 - **PDF Ingestion:** (Backend) Supports PDF documents for seed varieties and guidelines.
+- **Market Data:** Ingests and updates agricultural market price data from government sources.
 - **Chatbot:** Ask questions and get AI-powered answers.
 - **Weather & Soil Data:** Integrates with Weatherbit and Agro Monitoring APIs.
 - **History:** Stores and retrieves chat history per user.
@@ -38,6 +39,11 @@ ai-agent-app/
 │   ├── public/
 │   ├── package.json
 │   └── ...
+├── agrimarket/
+│   ├── FullScrape.py
+│   ├── DailyUpdate.py
+│   ├── CommodityAndCommodityHeads.csv
+│   └── .env
 └── README.md
 ```
 
@@ -94,6 +100,28 @@ ai-agent-app/
 
 ---
 
+## Market Data Setup (`agrimarket`)
+
+The `agrimarket` folder contains scripts and data for agricultural market prices scraped from the official government portal.
+
+- **CommodityAndCommodityHeads.csv:** Contains commodity codes for all of India(Do not chane this).
+- **FullScrape.py:** Scrapes the latest 45 days of market data from the government site. Run this once to initialize or refresh the entire market database.
+- **DailyUpdate.py:** Checks which days are missing in the latest 45 days and fetches only the missing data. Use this to keep your market data up to date.
+
+**To update market data:**
+
+```bash
+cd agrimarket
+
+# To fetch the latest 45 days of data (run once or when you want a full refresh)
+python FullScrape.py
+
+# To fetch only missing days in the latest 45 days (recommended for daily updates)
+python DailyUpdate.py
+```
+
+---
+
 ## Frontend Setup
 
 1. **Install frontend dependencies:**
@@ -119,7 +147,7 @@ ai-agent-app/
 ## Usage
 
 - **Upload CSV:** Use the uploader to ingest new data.
-- **Chat:** Ask questions about crops, weather, or recommendations.
+- **Chat:** Ask questions about crops, weather, market prices, or recommendations.
 - **History:** View previous chat interactions.
 
 ---
@@ -174,4 +202,4 @@ MIT
 - [Groq](https://groq.com/)
 - [ChromaDB](https://www.trychroma.com/)
 - [Weatherbit](https://www.weatherbit.io/)
--
+- 
