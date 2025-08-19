@@ -840,7 +840,7 @@
 #     return {"query": query, "location": location_info, "response": ai_content}
 
 
-# -- Paste below inside your main file --
+# -- existing code --
 
 import os
 import sqlite3
