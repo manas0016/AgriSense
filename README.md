@@ -138,8 +138,8 @@ AgriSense/
    - Copy `.envSample` to `.env` in the `backend/` folder.
    - Fill in your API keys:
      ```
-     OPENAI_API_KEY=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
-      GROQ_API_KEY=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
+
+      GROQ_API_KEY=your groq api key
       WEATHER_API_KEY=cab3be2a205d856f3504032be92d0522
       AGRO_API_KEY=00397c779310a78463e1b09b502ce32f
       WEATHERBIT_KEY=b77e8de87e4e4d2795df2760e5aeec56
