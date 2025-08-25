@@ -852,9 +852,10 @@ async def ask(
         weather_context = f"Soil & Moisture: {soil_moisture}\nForecast: {weather_forecast[:1500]}"
     prompt_rules = (
         "Rules:\n"
+
         "if you are giving weather forcast information then give in a structured manner not the raw details\n"
         "- Only answer the exact question asked. Do not provide extra explanations.\n"
-        "- If prices are requested, show the prices for all markets in the given district in a structured manner and it should be easy to read.\n"
+        "- if the user asks for market prices then give details like market name min price max price and modal price in different rows not in a table format\n"
         "- For irrigation, weather, schemes, seeds, use best-practice examples above.\n"
         "- Keep your answer concise; stay under 100 words unless a table is required.\n"
         "- No repetition."
