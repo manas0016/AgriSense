@@ -7,10 +7,12 @@ import time
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
-
+# agrimarket/CommodityAndCommodityHeads.csv
 load_dotenv()
 # Load commodity codes
-commodities = pd.read_csv('agrimarket/CommodityAndCommodityHeads.csv')
+if not os.path.exists('CommodityAndCommodityHeads.csv'):
+    raise FileNotFoundError("CommodityAndCommodityHeads.csv not found in agrimarket directory.")
+commodities = pd.read_csv('CommodityAndCommodityHeads.csv')
 
 
 def get_url(Commodity, CommodityHead, Market=0, date_from=None, date_to=None):
