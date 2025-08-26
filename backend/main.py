@@ -436,6 +436,8 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.document_loaders import PyPDFLoader
 from deep_translator import GoogleTranslator
 from geopy.distance import geodesic
+from auth import router as auth_router
+from user_history import router as user_history_router
 
 load_dotenv()
 
@@ -447,6 +449,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(auth_router)
+app.include_router(user_history_router)
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -554,8 +560,26 @@ CREATE TABLE IF NOT EXISTS messages (
 """)
 conn.commit()
 
-def store_message(user_id, role, content):
-    cursor.execute("INSERT INTO messages (user_id, role, content) VALUES (?, ?, ?)", (user_id, role, content))
+# Ensure chats table exists
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS chats (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    title TEXT
+)
+""")
+conn.commit()
+
+# Ensure chat_id column exists in messages table
+cursor.execute("PRAGMA table_info(messages)")
+columns = [col[1] for col in cursor.fetchall()]
+if "chat_id" not in columns:
+    cursor.execute("ALTER TABLE messages ADD COLUMN chat_id TEXT")
+    conn.commit()
+
+def store_message(user_id, role, content, chat_id=None):
+    cursor.execute("INSERT INTO messages (user_id, role, content, chat_id) VALUES (?, ?, ?, ?)", (user_id, role, content, chat_id))
     conn.commit()
 
 # ================= LOCATION & WEATHER =================
@@ -604,17 +628,7 @@ async def get_soil_moisture(lat, lon):
         print(f"Error fetching soil moisture: {e}")
         return f"Error fetching soil moisture: {e}"
 
-# async def get_weather_forecast(lat, lon, days=7):
-#     try:
-#         url = "https://api.weatherbit.io/v2.0/forecast/daily"
-#         params = {"lat": lat, "lon": lon, "days": days, "key": WEATHERBIT_KEY}
-#         async with httpx.AsyncClient(timeout=15.0) as client:
-#             res = await client.get(url, params=params)
-#             data = res.json()
-#         return data
-#     except Exception as e:
-#         print(f"Error fetching weather: {e}")
-#         return {}
+
 
 async def get_weather_forecast(lat: float, lon: float, days: int = 10):
     try:
@@ -777,6 +791,7 @@ def get_market_price_table(db_path, commodity, district):
 @app.post("/ask")
 async def ask(
     user_id: str = Form(...),
+    chat_id: str = Form(...),
     query: str = Form(...),
     lat: float = Form(...),
     lon: float = Form(...),
@@ -784,7 +799,7 @@ async def ask(
     lang: str = Form("en")
 
 ):
-    store_message(user_id, "user", query)
+    store_message(user_id, "user", query, chat_id)
 
     # 1. Translate user query to English if needed
     if lang != "en":
@@ -907,7 +922,7 @@ async def ask(
         except Exception as e:
             pass  # fallback to English if translation fails
 
-    store_message(user_id, "assistant", ai_content)
+    store_message(user_id, "assistant", ai_content,chat_id)
     return {"query": query, "location": location_info, "response": ai_content}
 
 @app.get("/history")

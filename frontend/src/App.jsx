@@ -1,191 +1,21 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import { v4 as uuidv4 } from "uuid";
-// import "./App.css";
-// import farmer from "./assets/farmer.jpg";
-// import clogo from  "./assets/clogo.jpg";
-// import ReactMarkdown from "react-markdown";
-// import { FaMicrophone } from "react-icons/fa";
-
-// const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-// function App() {
-//   const [userId] = useState(() => uuidv4());
-//   const [query, setQuery] = useState("");
-//   const [messages, setMessages] = useState([]);
-//   const [darkMode, setDarkMode] = useState(false);
-//   const [location, setLocation] = useState({ lat: null, lon: null });
-//   const [listening, setListening] = useState(false);
-//   const [lang, setLang] = useState("en");
-
-//   const backendUrl = "http://127.0.0.1:8000";
-
-//   // Dark mode toggle
-//   useEffect(() => {
-//     document.body.className = darkMode ? "dark-mode" : "";
-//   }, [darkMode]);
-
-//   // Fetch chat history
-//   useEffect(() => {
-//     const fetchHistory = async () => {
-//       try {
-//         const res = await axios.get(`${backendUrl}/history`, {
-//           params: { user_id: userId, limit: 50 }
-//         });
-//         if (res.data.history) {
-//           const formatted = res.data.history.map(msg => ({
-//             sender: msg.role === "user" ? "user" : "ai",
-//             text: msg.content
-//           }));
-//           setMessages(formatted);
-//         }
-//       } catch (err) {
-//         console.error("Failed to fetch history:", err);
-//       }
-//     };
-//     fetchHistory();
-//   }, [userId]);
-
-//   // Get user location
-//   useEffect(() => {
-//     if (navigator.geolocation) {
-//       navigator.geolocation.getCurrentPosition(
-//         (pos) => setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-//         (err) => console.error("Location permission denied.", err)
-//       );
-//     } else {
-//       console.warn("Geolocation not supported");
-//     }
-//   }, []);
-
-
-//   const handleSubmit = async (e, customQuery) => {
-//   if (e) e.preventDefault();
-//   const q = customQuery !== undefined ? customQuery : query;
-//   if (!q.trim()) return;
-
-//   setMessages(prev => [...prev, { sender: "user", text: q }]);
-//   setQuery("");
-
-//   try {
-//     const formData = new FormData();
-//     formData.append("user_id", userId);
-//     formData.append("query", q);
-//     formData.append("lat", location.lat || 0);
-//     formData.append("lon", location.lon || 0);
-//     formData.append("lang", lang);
-
-//     const res = await axios.post(`${backendUrl}/ask`, formData);
-//     if (res.data.response) {
-//       setMessages(prev => [...prev, { sender: "ai", text: res.data.response }]);
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     setMessages(prev => [...prev, { sender: "ai", text: "Error fetching AI response." }]);
-//   }
-// };
-
-//   const startListening = () => {
-//   if (!SpeechRecognition) {
-//     alert("Speech Recognition not supported in this browser.");
-//     return;
-//   }
-//   const recognition = new SpeechRecognition();
-//   recognition.lang = "auto"; // or "hi-IN" for Hindi, etc.
-//   recognition.interimResults = false;
-//   recognition.maxAlternatives = 1;
-
-//   recognition.onstart = () => setListening(true);
-
-// recognition.onresult = (event) => {
-//   const transcript = event.results[0][0].transcript;
-//   setQuery(transcript);
-//   setListening(false);
-//   // Auto-submit with transcript
-//   setTimeout(() => {
-//     handleSubmit(null, transcript);
-//   }, 100);
-// };
-
-//   recognition.onerror = (event) => {
-//     setListening(false);
-//     alert("Voice input error: " + event.error);
-//   };
-
-//   recognition.onend = () => setListening(false);
-
-//   recognition.start();
-// };
-
-//   return (
-//     <div className={`agri-bg ${darkMode ? "dark-mode" : ""}`}>
-//       <button className="dark-toggle" onClick={() => setDarkMode(prev => !prev)}>
-//         {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
-//       </button>
-
-//       <div className="header">
-//         <img src={farmer} alt="Farm Logo" className="logo" />
-//         <h1>Agri AI Assistant</h1>
-//         <p className="subtitle">Your smart companion for crops, weather & farming advice</p>
-//       </div>
-
-//       <div className="chat-container">
-//         <div className="chat-window">
-//           {messages.map((msg, idx) => (
-//             <div key={idx} className={`message ${msg.sender}`}>
-//               <img
-//                 className="avatar"
-//                 src={msg.sender === "user" ? clogo : "/ai-avatar.png"}
-//                 alt="avatar"
-//               />
-//               <span>
-//                 <ReactMarkdown>{msg.text}</ReactMarkdown>
-//               </span>
-//             </div>
-//           ))}
-//         </div>
-
-//        <form className="chat-input" onSubmit={handleSubmit}>
-//   <input
-//     type="text"
-//     placeholder="Type your question about crops, weather, or farming..."
-//     value={query}
-//     onChange={(e) => setQuery(e.target.value)}
-//   />
-//   <button
-//     type="button"
-//     className={`mic-btn${listening ? " listening" : ""}`}
-//     onClick={startListening}
-//     title="Speak your question"
-//     style={{ marginRight: 8 }}
-//   >
-
-
-//     {listening ? "🎤..." : "🎤"}
-//   </button>
-//   <button type="submit">Send 🌱</button>
-// </form>
-//       </div>
-//       <footer className="footer">
-//         <span>🌾 Powered by AI for Farmers • {new Date().getFullYear()}</span>
-//       </footer>
-//     </div>
-//   );
-// }
-
-// export default App;
-
 import React, { useState, useEffect, useRef } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 import farmer from "./assets/farmer.jpg";
-import clogo from "./assets/clogo.jpg";
-import ReactMarkdown from "react-markdown";
-import { FaMicrophone, FaRedo, FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Login, Signup, OAuthCallback } from "./pages/login-signup.jsx";
+import Sidebar from "./components/sidebar.jsx";
+import ChatBox from "./components/Chat.jsx";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+
+
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -204,6 +34,8 @@ function LocationMarker({ position, setPosition, mapRef }) {
     },
   });
 
+
+
   // Store the map instance in the ref
   useEffect(() => {
     if (map && mapRef) {
@@ -214,7 +46,24 @@ function LocationMarker({ position, setPosition, mapRef }) {
   return position ? <Marker position={position} /> : null;
 }
 
-function App() {
+function getUserFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return {
+      user_id: payload.user_id || payload.id || payload.sub || payload.gmail || null,
+      name: payload.name || (payload.gmail ? payload.gmail.split("@")[0] : "User"),
+      gmail: payload.gmail || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function MainApp() {
+
+  
   const [userId] = useState(() => uuidv4());
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
@@ -229,16 +78,23 @@ function App() {
   const [mapPosition, setMapPosition] = useState([20.5937, 78.9629]); // Default to center of India
   const [locationName, setLocationName] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
-
-  
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user, setUser] = useState(getUserFromToken());
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
 
   const chatWindowRef = useRef(null);
   const mapRef = useRef(null);
+  const chatBoxRef = useRef(null);
+  const locationToastShown = useRef(false); // <-- Add this line
+  const prevUser = useRef(null);
 
   const formatLocation = () => {
     if (!location.lat || !location.lon) return "Location not set";
     return `${location.lat.toFixed(3)}°, ${location.lon.toFixed(3)}°`;
   };
+
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
   // Handle location selection from map
   const handleLocationSearch = async (e) => {
@@ -270,6 +126,15 @@ function App() {
     alert("Error searching for location. Please try again.");
   }
 };
+
+  // --- LOGOUT HANDLER ---
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setChats([]);
+    setActiveChatId(null);
+    // Optionally clear other user-related state here
+  };
 
 const determineZoomLevel = (locationType) => {
   // Default zoom levels based on location type
@@ -304,15 +169,61 @@ const determineZoomLevel = (locationType) => {
           const newLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
           setLocation(newLocation);
           setMapPosition([pos.coords.latitude, pos.coords.longitude]);
-          // Get initial location name
           fetchLocationName(newLocation.lat, newLocation.lon);
         },
-        (err) => console.error("Location permission denied.", err)
+        (err) => {
+          if (!locationToastShown.current) {
+            toast.info("Location is not set. Location will be used for better responses.", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              theme: "colored",
+            });
+            locationToastShown.current = true; // <-- Show only once
+          }
+          console.error("Location permission denied.", err);
+        }
       );
     } else {
       console.warn("Geolocation not supported");
     }
   }, []);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/history`, {
+          params: { user_id: userId, limit: 50 }
+        });
+        if (res.data.history) {
+          const formatted = res.data.history.map(msg => ({
+            sender: msg.role === "user" ? "user" : "ai",
+            text: msg.content
+          }));
+          setMessages(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
+    };
+    fetchHistory();
+  }, [userId]);
+
+  // Refresh chats
+  const refreshChats = async () => {
+    if (user && user.user_id) {
+      const res = await axios.get(`${backendUrl}/user/chats`, { params: { user_id: user.user_id } });
+      setChats(res.data.chats);
+      // Remove setActiveChatId here!
+    }
+  };
+
+  useEffect(() => {
+    refreshChats();
+  }, [user]);
 
   // Function to get location name from coordinates
   const fetchLocationName = async (lat, lon) => {
@@ -625,159 +536,137 @@ const determineZoomLevel = (locationType) => {
     handleSubmit(null, template);
   };
 
-  const handleRegenerate = async () => {
-    if (!lastUserQuery || isLoading) return;
-    
-    // Remove the last AI message
-    setMessages(prev => {
-      const newMessages = [...prev];
-      // Find the last AI message and remove it
-      for (let i = newMessages.length - 1; i >= 0; i--) {
-        if (newMessages[i].sender === "ai") {
-          newMessages.splice(i, 1);
-          break;
-        }
-      }
-      return newMessages;
-    });
-    // Resend the last user query
-    setIsLoading(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("user_id", userId);
-      formData.append("query", lastUserQuery);
-      formData.append("lat", location.lat || 0);
-      formData.append("lon", location.lon || 0);
-      formData.append("lang", lang);
-      formData.append("regenerate", "true"); // Add a flag to indicate this is a regenerated request
-
-      const res = await axios.post(`${backendUrl}/ask`, formData);
-      if (res.data.response) {
-        setMessages(prev => [...prev, { sender: "ai", text: res.data.response }]);
-      }
-    } catch (err) {
-      console.error(err);
-      setMessages(prev => [...prev, { sender: "ai", text: "Error fetching AI response." }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const backendUrl = "http://127.0.0.1:8000";
 
   // Check if first-time user
+  // useEffect(() => {
+  //   const hasVisitedBefore = localStorage.getItem('kishanmitra_visited');
+  //   if (!hasVisitedBefore) {
+  //     setShowWelcome(true);
+  //     localStorage.setItem('kishanmitra_visited', 'true');
+  //   }
+  // }, []);
+
   useEffect(() => {
-    const hasVisitedBefore = localStorage.getItem('kishanmitra_visited');
-    if (!hasVisitedBefore) {
-      setShowWelcome(true);
-      localStorage.setItem('kishanmitra_visited', 'true');
-    }
-  }, []);
+  if (user) {
+    setShowWelcome(true);
+  }
+}, [user]);
 
   // Dark mode toggle
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
   }, [darkMode]);
 
-  // Fetch chat history
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await axios.get(`${backendUrl}/history`, {
-          params: { user_id: userId, limit: 50 }
-        });
-        if (res.data.history) {
-          const formatted = res.data.history.map(msg => ({
-            sender: msg.role === "user" ? "user" : "ai",
-            text: msg.content
-          }));
-          setMessages(formatted);
-        }
-      } catch (err) {
-        console.error("Failed to fetch history:", err);
-      }
-    };
-    fetchHistory();
-  }, [userId]);
+
 
   // Get user location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-        (err) => console.error("Location permission denied.", err)
-      );
-    } else {
-      console.warn("Geolocation not supported");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (pos) => {
+  //         const newLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+  //         setLocation(newLocation);
+  //         setMapPosition([pos.coords.latitude, pos.coords.longitude]);
+  //         fetchLocationName(newLocation.lat, newLocation.lon);
+  //       },
+  //       (err) => {
+  //         toast.info("Location is not set. Location will be used for better responses.", {
+  //           position: "top-right",
+  //           autoClose: 5000,
+  //           hideProgressBar: false,
+  //           closeOnClick: true,
+  //           pauseOnHover: true,
+  //           draggable: true,
+  //           theme: "colored",
+  //         });
+  //         console.error("Location permission denied.", err);
+  //       }
+  //     );
+  //   } else {
+  //     console.warn("Geolocation not supported");
+  //   }
+  // }, []);
 
-  // Send query to backend
-  const handleSubmit = async (e, customQuery) => {
-    if (e) e.preventDefault();
-    const q = customQuery !== undefined ? customQuery : query;
-    if (!q.trim()) return;
 
-    // Store the query for potential regeneration
-    setLastUserQuery(q);
+  // const handleSubmit = async (e, customQuery) => {
+  //   if (e) e.preventDefault();
+  //   const q = customQuery !== undefined ? customQuery : query;
+  //   if (!q.trim()) return;
+
+  //   // Store the query for potential regeneration
+  //   setLastUserQuery(q);
     
-    setMessages(prev => [...prev, { sender: "user", text: q }]);
-    setQuery("");
-    setIsLoading(true);
+  //   setMessages(prev => [...prev, { sender: "user", text: q }]);
+  //   setQuery("");
+  //   setIsLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("user_id", userId);
-      formData.append("query", q);
-      formData.append("lat", location.lat || 0);
-      formData.append("lon", location.lon || 0);
-      formData.append("lang", lang);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("user_id", userId);
+  //     formData.append("query", q);
+  //     formData.append("lat", location.lat || 0);
+  //     formData.append("lon", location.lon || 0);
+  //     formData.append("lang", lang);
 
-      const res = await axios.post(`${backendUrl}/ask`, formData);
-      if (res.data.response) {
-        setMessages(prev => [...prev, { sender: "ai", text: res.data.response }]);
-      }
-    } catch (err) {
-      console.error(err);
-      setMessages(prev => [...prev, { sender: "ai", text: "Error fetching AI response." }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     const res = await axios.post(`${backendUrl}/ask`, formData);
+  //     if (res.data.response) {
+  //       setMessages(prev => [...prev, { sender: "ai", text: res.data.response }]);
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     setMessages(prev => [...prev, { sender: "ai", text: "Error fetching AI response." }]);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Voice input handler
-  const startListening = () => {
-    if (!SpeechRecognition) {
-      alert("Speech Recognition not supported in this browser.");
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang === "en" ? "en-IN" : `${lang}-IN`;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+// ...existing code...
 
-    recognition.onstart = () => setListening(true);
+// const startListening = () => {
+//   if (!SpeechRecognition) {
+//     alert("Speech Recognition not supported in this browser.");
+//     return;
+//   }
+//   const recognition = new SpeechRecognition();
+//   recognition.lang = lang === "en" ? "en-IN" : `${lang}-IN`;
+//   recognition.interimResults = false;
+//   recognition.maxAlternatives = 1;
+//   recognition.continuous = true;
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setQuery(transcript);
-      setListening(false);
-      setTimeout(() => {
-        handleSubmit(null, transcript);
-      }, 100);
-    };
+//   let stoppedByUser = false;
 
-    recognition.onerror = (event) => {
-      setListening(false);
-      alert("Voice input error: " + event.error);
-    };
+//   recognition.onstart = () => setListening(true);
 
-    recognition.onend = () => setListening(false);
+//   recognition.onresult = (event) => {
+//     const transcript = event.results[0][0].transcript;
+//     setQuery(transcript);
+//     setListening(false);
+//     setTimeout(() => {
+//       handleSubmit(null, transcript);
+//     }, 100);
+//     stoppedByUser = true; // Stop after getting a result
+//     recognition.stop();
+//   };
 
-    recognition.start();
-  };
+//   recognition.onerror = (event) => {
+//     setListening(false);
+//     stoppedByUser = true;
+//     alert("Voice input error: " + event.error);
+//   };
 
+//   recognition.onend = () => {
+//     setListening(false);
+//     // If not stopped by user, restart listening for longer pauses
+//     if (!stoppedByUser) {
+//       recognition.start();
+//     }
+//   };
+
+//   stoppedByUser = false;
+//   recognition.start();
+// };
   const handleLocationSelect = async () => {
     if (mapPosition) {
       // Update the location state with the selected map position
@@ -808,10 +697,57 @@ const determineZoomLevel = (locationType) => {
       setShowLocationModal(false);
     }
   };
+  const handleNewChat = () => {
+    setMessages([]);
+  };
+
+  useEffect(() => {
+    const onStorage = () => setUser(getUserFromToken());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => {
+    const selectOrCreateChat = async () => {
+      if (user && user.user_id) {
+        const res = await axios.get(`${backendUrl}/user/chats`, { params: { user_id: user.user_id } });
+        setChats(res.data.chats);
+
+        if (res.data.chats && res.data.chats.length > 0) {
+          setActiveChatId(res.data.chats[0].chat_id);
+        } else {
+          const formData = new FormData();
+          formData.append("user_id", user.user_id);
+          const createRes = await axios.post(`${backendUrl}/user/new_chat`, formData);
+          setActiveChatId(createRes.data.chat_id);
+          setChats([{ chat_id: createRes.data.chat_id, title: createRes.data.title || "New Chat" }]);
+        }
+      }
+    };
+    selectOrCreateChat();
+  }, [user]);
 
   return (
-
-    <div className={`agri-bg ${darkMode ? "dark-mode" : ""}`}>
+  <>
+      <ToastContainer /> 
+    <Sidebar
+      open={sidebarOpen}
+      onToggle={toggleSidebar}
+      user={user}
+      chats={chats}
+      activeChatId={activeChatId}
+      setActiveChatId={setActiveChatId}
+      refreshChats={refreshChats}
+       onLogout={handleLogout}
+    />
+    <div
+      className={`agri-bg ${darkMode ? "dark-mode" : ""}`}
+      style={{
+        marginLeft: sidebarOpen ? 220 : 0,
+        transition: "margin-left 0.2s",
+      }}
+    >
+      {/* Welcome Modal */}
       {showWelcome && (
         <div className="welcome-overlay">
           <div className="welcome-modal">
@@ -838,9 +774,9 @@ const determineZoomLevel = (locationType) => {
         </div>
       )}
 
-      <button className="dark-toggle" onClick={() => setDarkMode(prev => !prev)}>
+      {/* <button className="dark-toggle" onClick={() => setDarkMode(prev => !prev)}>
         {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
-      </button>
+      </button> */}
 
       <div className="header">
         <img src={farmer} alt="Farm Logo" className="logo" />
@@ -856,38 +792,38 @@ const determineZoomLevel = (locationType) => {
             id="language-select"
             value={lang}
             onChange={e => setLang(e.target.value)}
-          style={{ marginBottom: 10, padding: 6, borderRadius: 6, width: "100%" }}
-        >
-          <option value="en">English</option>
-          <option value="hi">हिन्दी (Hindi)</option>
-          <option value="as">অসমীয়া (Assamese)</option>
-          <option value="bn">বাংলা (Bengali)</option>
-          <option value="brx">बोड़ो (Bodo)</option>
-          <option value="doi">डोगरी (Dogri)</option>
-          <option value="gu">ગુજરાતી (Gujarati)</option>
-          <option value="kn">ಕನ್ನಡ (Kannada)</option>
-          <option value="ks">کٲشُر (Kashmiri)</option>
-          <option value="kok">कोंकणी (Konkani)</option>
-          <option value="mai">मैथिली (Maithili)</option>
-          <option value="ml">മലയാളം (Malayalam)</option>
-          <option value="mni">মৈতৈলোন (Manipuri)</option>
-          <option value="mr">मराठी (Marathi)</option>
-          <option value="ne">नेपाली (Nepali)</option>
-          <option value="or">ଓଡ଼ିଆ (Odia)</option>
-          <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-          <option value="sa">संस्कृत (Sanskrit)</option>
-          <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
-          <option value="sd">سنڌي (Sindhi)</option>
-          <option value="ta">தமிழ் (Tamil)</option>
-          <option value="te">తెలుగు (Telugu)</option>
-          <option value="ur">اردو (Urdu)</option>
-        </select>
-      </div>
+            style={{ marginBottom: 10, padding: 6, borderRadius: 6, width: "100%" }}
+          >
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="as">অসমীয়া (Assamese)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="brx">बोड़ो (Bodo)</option>
+            <option value="doi">डोगरी (Dogri)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="ks">کٲشُر (Kashmiri)</option>
+            <option value="kok">कोंकणी (Konkani)</option>
+            <option value="mai">मैथिली (Maithili)</option>
+            <option value="ml">മലയാളം (Malayalam)</option>
+            <option value="mni">মৈতৈলোন (Manipuri)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="ne">नेपाली (Nepali)</option>
+            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="sa">संस्कृत (Sanskrit)</option>
+            <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+            <option value="sd">سنڌي (Sindhi)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="ur">اردو (Urdu)</option>
+          </select>
+        </div>
 
-      <div className="location-selector">
+        <div className="location-selector">
           <label>Location:</label>
-          <button 
-            className="location-btn" 
+          <button
+            className="location-btn"
             onClick={() => setShowLocationModal(true)}
             title="Set your location"
           >
@@ -897,92 +833,88 @@ const determineZoomLevel = (locationType) => {
       </div>
 
       {/* Location Modal */}
-        {showLocationModal && (
-          <div className="modal-overlay">
-            <div className="location-modal">
-              <h3>Select Your Location</h3>
-              
-              {/* Add location search form */}
-              <form onSubmit={handleLocationSearch} className="location-search">
-                <input
-                  type="text"
-                  placeholder="Enter city, state or address..."
-                  value={locationSearch}
-                  onChange={(e) => setLocationSearch(e.target.value)}
-                  className="location-search-input"
+      {showLocationModal && (
+        <div className="modal-overlay">
+          <div className="location-modal">
+            <h3>Select Your Location</h3>
+            <form onSubmit={handleLocationSearch} className="location-search">
+              <input
+                type="text"
+                placeholder="Enter city, state or address..."
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                className="location-search-input"
+              />
+              <button type="submit" className="location-search-btn">
+                Search
+              </button>
+            </form>
+            <p>Or click directly on the map to set your precise location</p>
+            <div className="map-container">
+              <MapContainer
+                center={mapPosition}
+                zoom={5}
+                maxZoom={22}
+                style={{ height: "50vh", width: "100%" }}
+                whenCreated={(map) => { mapRef.current = map; }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <button type="submit" className="location-search-btn">
-                  Search
-                </button>
-              </form>
-              
-              <p>Or click directly on the map to set your precise location</p>
-              
-              <div className="map-container">
-                <MapContainer 
-                  center={mapPosition} 
-                  zoom={5} 
-                  maxZoom={22}
-                  style={{ height: "50vh", width: "100%" }}
-                  whenCreated={(map) => { mapRef.current = map; }}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <LocationMarker 
-                    position={mapPosition} 
-                    setPosition={setMapPosition} 
-                    mapRef={mapRef} 
-                  />
-                </MapContainer>
-              </div>
-              <div className="modal-actions">
-                <button onClick={() => setShowLocationModal(false)}>Cancel</button>
-                <button onClick={handleLocationSelect}>Confirm Location</button>
-              </div>
+                <LocationMarker
+                  position={mapPosition}
+                  setPosition={setMapPosition}
+                  mapRef={mapRef}
+                />
+              </MapContainer>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowLocationModal(false)}>Cancel</button>
+              <button onClick={handleLocationSelect}>Confirm Location</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Quick Prompt Templates */}
       <div className="prompt-templates">
         <h3>
           {lang === "en" ? "Quick Questions" :
-           lang === "hi" ? "त्वरित प्रश्न" :
-           lang === "bn" ? "দ্রুত প্রশ্ন" :
-           lang === "te" ? "త్వరిత ప్రశ్నలు" :
-           lang === "en" ? "Quick Questions" :
-           lang === "hi" ? "त्वरित प्रश्न" :
-           lang === "bn" ? "দ্রুত প্রশ্ন" :
-           lang === "te" ? "త్వరిత ప్రశ్నలు" :
-           lang === "ta" ? "விரைவு கேள்விகள்" :
-           lang === "mr" ? "जलद प्रश्न" :
-           lang === "gu" ? "ઝડપી પ્રશ્નો" :
-           lang === "kn" ? "ತ್ವರಿತ ಪ್ರಶ್ನೆಗಳು" :
-           lang === "ml" ? "പെട്ടെന്ന് ചോദിക്കാവുന്ന ചോദ്യങ്ങൾ" :
-           lang === "or" ? "ଦ୍ରୁତ ପ୍ରଶ୍ନଗୁଡ଼ିକ" :
-           lang === "pa" ? "ਤੁਰੰਤ ਸਵਾਲ" :
-           lang === "as" ? "দ্ৰুত প্ৰশ্নবোৰ" :
-           lang === "mai" ? "शीघ्र प्रश्न" :
-           lang === "sat" ? "तेज प्रश्न" :
-           lang === "kok" ? "जलद प्रश्न" :
-           lang === "doi" ? "झटपट सवाल" :
-           lang === "ne" ? "छिटो प्रश्नहरू" :
-           lang === "sd" ? "جلدي سوال" :
-           lang === "ks" ? "ژر سوال" :
-           lang === "brx" ? "गोजोनाय प्र्शन" :
-           lang === "mni" ? "চৎকৃত প্ৰশ্ন" :
-           lang === "sa" ? "त्वरितप्रश्नाः" :
-           lang === "ta" ? "விரைவு கேள்விகள்" : "Quick Questions"}
+            lang === "hi" ? "त्वरित प्रश्न" :
+            lang === "bn" ? "দ্রুত প্রশ্ন" :
+            lang === "te" ? "త్వరిత ప్రశ్నలు" :
+            lang === "ta" ? "விரைவு கேள்விகள்" :
+            lang === "mr" ? "जलद प्रश्न" :
+            lang === "gu" ? "ઝડપી પ્રશ્નો" :
+            lang === "kn" ? "ತ್ವರಿತ ಪ್ರಶ್ನೆಗಳು" :
+            lang === "ml" ? "പെട്ടെന്ന് ചോദിക്കാവുന്ന ചോദ്യങ്ങൾ" :
+            lang === "or" ? "ଦ୍ରୁତ ପ୍ରଶ୍ନଗୁଡ଼ିକ" :
+            lang === "pa" ? "ਤੁਰੰਤ ਸਵਾਲ" :
+            lang === "as" ? "দ্ৰুত প্ৰশ্নবোৰ" :
+            lang === "mai" ? "शीघ्र प्रश्न" :
+            lang === "sat" ? "तेज प्रश्न" :
+            lang === "kok" ? "जलद प्रश्न" :
+            lang === "doi" ? "झटपट सवाल" :
+            lang === "ne" ? "छिटो प्रश्नहरू" :
+            lang === "sd" ? "جلدي سوال" :
+            lang === "ks" ? "ژر سوال" :
+            lang === "brx" ? "गोजोनाय प्र्शन" :
+            lang === "mni" ? "চৎকৃত প্ৰশ্ন" :
+            lang === "sa" ? "त्वरितप्रश्नाः" :
+            "Quick Questions"}
         </h3>
         <div className="template-container">
           {(promptTemplates[lang] || promptTemplates.en).map((template, index) => (
-            <button 
-              key={index} 
-              className="template-button" 
-              onClick={() => handlePromptSelect(template)}
-              disabled={isLoading}
+            <button
+              key={index}
+              className="template-button"
+              onClick={() =>
+                chatBoxRef.current &&
+                chatBoxRef.current.sendPrompt &&
+                chatBoxRef.current.sendPrompt(template)
+              }
+              disabled={isLoading || !activeChatId} // <-- disable if no chat id
             >
               {template}
             </button>
@@ -990,75 +922,37 @@ const determineZoomLevel = (locationType) => {
         </div>
       </div>
 
+      {/* ChatBox */}
       <div className="chat-container" style={{ maxWidth: 900, margin: "1px auto", width: "100%" }}>
-        <div className="chat-window" ref={chatWindowRef}>
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`message ${msg.sender}`}>
-              <img
-                className="avatar"
-                src={msg.sender === "user" ? clogo : "/ai-avatar.png"}
-                alt="avatar"
-              />
-              <span>
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
-              </span>
-              {/* Add regenerate button only for AI messages */}
-              {msg.sender === "ai" && idx === messages.length - 1 && !isLoading && (
-                <button 
-                  className="regenerate-btn"
-                  onClick={handleRegenerate}
-                  title={
-                    lang === "en" ? "Regenerate answer" :
-                    lang === "hi" ? "उत्तर पुनः प्राप्त करें" :
-                    "Regenerate answer"
-                  }
-                >
-                  <FaRedo />
-                </button>
-              )}
-            </div>
-          ))}
-
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="message ai loading">
-              <img className="avatar" src="/ai-avatar.png" alt="AI thinking" />
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <form className="chat-input" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Type your question about crops, weather, or farming..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            disabled={isLoading}
+        {activeChatId && (
+          <ChatBox
+            ref={chatBoxRef}
+            activeChatId={activeChatId}
+            user={user}
+            refreshChats={refreshChats}
+            location={location}
+            lang={lang}
           />
-          <button
-            type="button"
-            className={`mic-btn${listening ? " listening" : ""}`}
-            onClick={startListening}
-            title="Speak your question"
-            style={{ marginRight: 8 }}
-            disabled={isLoading}
-          >
-            {listening ? "🎙️..." : "🎙️"}
-          </button>
-          <button type="submit" disabled={isLoading}> {/* Disable submit button while loading */}
-            {isLoading ? "Sending..." : "Send 🌱"}
-          </button>
-        </form>
+        )}
+        <footer className="footer">
+          <span>🌾 Powered by AI for Farmers • {new Date().getFullYear()}</span>
+        </footer>
       </div>
-      <footer className="footer">
-        <span>🌾 Powered by AI for Farmers • {new Date().getFullYear()}</span>
-      </footer>
     </div>
+  </>
+);
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/*" element={<MainApp />} />
+      </Routes>
+    </Router>
   );
 }
 
