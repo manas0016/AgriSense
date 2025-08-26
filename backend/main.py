@@ -458,20 +458,21 @@ db_custom = Chroma(collection_name="custom_db", embedding_function=embedding_mod
 
 # ================= INGESTION FUNCTIONS =================
 
-def ingest_all_csvs(folder_path="data_csv", chunk_size=5):
+def ingest_all_csvs(folder_path="data_csv", chunk_size=500):
     csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
     for csv_file in csv_files:
         try:
             df = pd.read_csv(csv_file)
-            new_texts = []
             for start_idx in range(0, len(df), chunk_size):
                 chunk_rows = df.iloc[start_idx: start_idx + chunk_size]
                 chunk_texts = [" | ".join([f"{col}: {row[col]}" for col in chunk_rows.columns]) for _, row in chunk_rows.iterrows()]
-                new_texts.append("\n".join(chunk_texts))
-            db.add_texts(new_texts)
+                # Add each batch immediately to avoid large memory usage
+                db.add_texts(["\n".join(chunk_texts)])
         except Exception as e:
             print(f"Error ingesting {csv_file}: {e}")
     db.persist()
+
+
 
 def ingest_pdfs(folder_path="data_pdf"):
     pdf_files = glob.glob(os.path.join(folder_path, "*.pdf"))
@@ -781,6 +782,7 @@ async def ask(
     lon: float = Form(...),
     k: int = Form(3),
     lang: str = Form("en")
+
 ):
     store_message(user_id, "user", query)
 
@@ -852,7 +854,8 @@ async def ask(
         weather_context = f"Soil & Moisture: {soil_moisture}\nForecast: {weather_forecast[:1500]}"
     prompt_rules = (
         "Rules:\n"
-
+        "Only provide market price information if the user explicitly asks for market price. In all other cases, do not include market price details."
+        "if the irrigation question is asked then DAS(days after sowing) should be explained not just DAS should be given it should be easy for the farmers\n"
         "if you are giving weather forcast information then give in a structured manner not the raw details\n"
         "- Only answer the exact question asked. Do not provide extra explanations.\n"
         "- if the user asks for market prices then give details like market name min price max price and modal price in different rows not in a table format\n"
@@ -863,6 +866,7 @@ async def ask(
         " - If the forecasted temperature is below the crop's threshold, warn the farmer.\n"
         " - If above, reassure the farmer.\n"
         " - Be concise and practical.\n"
+        "For queries related to crop diseases or pesticides, do not return full raw database records. Instead, generate a concise, farmer-friendly summary that highlights only the most relevant disease, pest, or pesticide information from the data."
     )
 
     ai_prompt = f"""

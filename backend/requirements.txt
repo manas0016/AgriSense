@@ -19,6 +19,7 @@ protobuf==4.21.0
 urllib3==1.26.18
 tf-keras==2.15.0
 
+
 fastapi
 uvicorn
 httpx
