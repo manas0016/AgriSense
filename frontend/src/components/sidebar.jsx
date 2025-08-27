@@ -8,16 +8,6 @@ const Sidebar = ({ open, onToggle, user, chats, activeChatId, setActiveChatId, r
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef();
 
-//   // Listen for token changes (OAuth flow or logout)
-//   useEffect(() => {
-//     const onStorage = () => setUser(getUserFromToken());
-//     window.addEventListener("storage", onStorage);
-
-//     // Also check on mount (for OAuth redirect)
-//     onStorage();
-
-//     return () => window.removeEventListener("storage", onStorage);
-//   }, []);
 
   // Hide popup when clicking outside
   useEffect(() => {

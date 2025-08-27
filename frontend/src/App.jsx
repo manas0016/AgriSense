@@ -538,14 +538,7 @@ const determineZoomLevel = (locationType) => {
 
   const backendUrl = "http://127.0.0.1:8000";
 
-  // Check if first-time user
-  // useEffect(() => {
-  //   const hasVisitedBefore = localStorage.getItem('kishanmitra_visited');
-  //   if (!hasVisitedBefore) {
-  //     setShowWelcome(true);
-  //     localStorage.setItem('kishanmitra_visited', 'true');
-  //   }
-  // }, []);
+
 
   useEffect(() => {
   if (user) {
@@ -560,113 +553,6 @@ const determineZoomLevel = (locationType) => {
 
 
 
-  // Get user location
-  // useEffect(() => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (pos) => {
-  //         const newLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-  //         setLocation(newLocation);
-  //         setMapPosition([pos.coords.latitude, pos.coords.longitude]);
-  //         fetchLocationName(newLocation.lat, newLocation.lon);
-  //       },
-  //       (err) => {
-  //         toast.info("Location is not set. Location will be used for better responses.", {
-  //           position: "top-right",
-  //           autoClose: 5000,
-  //           hideProgressBar: false,
-  //           closeOnClick: true,
-  //           pauseOnHover: true,
-  //           draggable: true,
-  //           theme: "colored",
-  //         });
-  //         console.error("Location permission denied.", err);
-  //       }
-  //     );
-  //   } else {
-  //     console.warn("Geolocation not supported");
-  //   }
-  // }, []);
-
-
-  // const handleSubmit = async (e, customQuery) => {
-  //   if (e) e.preventDefault();
-  //   const q = customQuery !== undefined ? customQuery : query;
-  //   if (!q.trim()) return;
-
-  //   // Store the query for potential regeneration
-  //   setLastUserQuery(q);
-    
-  //   setMessages(prev => [...prev, { sender: "user", text: q }]);
-  //   setQuery("");
-  //   setIsLoading(true);
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("user_id", userId);
-  //     formData.append("query", q);
-  //     formData.append("lat", location.lat || 0);
-  //     formData.append("lon", location.lon || 0);
-  //     formData.append("lang", lang);
-
-  //     const res = await axios.post(`${backendUrl}/ask`, formData);
-  //     if (res.data.response) {
-  //       setMessages(prev => [...prev, { sender: "ai", text: res.data.response }]);
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     setMessages(prev => [...prev, { sender: "ai", text: "Error fetching AI response." }]);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // Voice input handler
-// ...existing code...
-
-// const startListening = () => {
-//   if (!SpeechRecognition) {
-//     alert("Speech Recognition not supported in this browser.");
-//     return;
-//   }
-//   const recognition = new SpeechRecognition();
-//   recognition.lang = lang === "en" ? "en-IN" : `${lang}-IN`;
-//   recognition.interimResults = false;
-//   recognition.maxAlternatives = 1;
-//   recognition.continuous = true;
-
-//   let stoppedByUser = false;
-
-//   recognition.onstart = () => setListening(true);
-
-//   recognition.onresult = (event) => {
-//     const transcript = event.results[0][0].transcript;
-//     setQuery(transcript);
-//     setListening(false);
-//     setTimeout(() => {
-//       handleSubmit(null, transcript);
-//     }, 100);
-//     stoppedByUser = true; // Stop after getting a result
-//     recognition.stop();
-//   };
-
-//   recognition.onerror = (event) => {
-//     setListening(false);
-//     stoppedByUser = true;
-//     alert("Voice input error: " + event.error);
-//   };
-
-//   recognition.onend = () => {
-//     setListening(false);
-//     // If not stopped by user, restart listening for longer pauses
-//     if (!stoppedByUser) {
-//       recognition.start();
-//     }
-//   };
-
-//   stoppedByUser = false;
-//   recognition.start();
-// };
   const handleLocationSelect = async () => {
     if (mapPosition) {
       // Update the location state with the selected map position
